@@ -1,5 +1,5 @@
 diff --git a/arch/mips/xburst/soc-t23/chip-t23/isvp/common/spi_bus.c b/arch/mips/xburst/soc-t23/chip-t23/isvp/common/spi_bus.c
-index cd06b8ac..b8eb434d 100644
+index cd06b8ac..3d7f18c4 100644
 --- a/arch/mips/xburst/soc-t23/chip-t23/isvp/common/spi_bus.c
 +++ b/arch/mips/xburst/soc-t23/chip-t23/isvp/common/spi_bus.c
 @@ -153,6 +153,27 @@ struct spi_nor_platform_data spi_nor_pdata[] = {
@@ -12,7 +12,7 @@ index cd06b8ac..b8eb434d 100644
 +		.pagesize       = 256,
 +		.sectorsize     = 4 * 1024,
 +		.chipsize       = 8192 * 1024,
-+		.erasesize      = 32 * 1024,
++		.erasesize      = 4 * 1024,
 +		.id             = 0x1c7117,
 +
 +		.block_info     = flash_block_info,
