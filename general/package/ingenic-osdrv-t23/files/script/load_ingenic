@@ -50,11 +50,15 @@ case ${SENSOR} in
 		ISP_PARAM="isp_clk=200000000"
 		SENSOR_PARAM="sensor_max_fps=25 data_interface=1"
 		;;
+	"sc3336")
+		ISP_PARAM="isp_clk=200000000"
+		SENSOR_PARAM="data_interface=1"
+		;;
 	"sp140a")
- 		ISP_PARAM="isp_clk=200000000"
- 		gpio clear 6
- 		sleep 1
- 		gpio set 1
+  		ISP_PARAM="isp_clk=200000000"
+  		gpio clear 6
+  		sleep 1
+  		gpio set 1
 		;;
 	*)
 		ISP_PARAM="isp_clk=200000000"
@@ -76,6 +80,9 @@ fi
 lsmod | grep -q ${SENSOR}
 if [ $? -ne 0 ]; then
 	modprobe sensor_${SENSOR}_t23 ${SENSOR_PARAM}
+	if [ $? -ne 0 ] && [ -f "${KMOD_PATH}/sensor_${SENSOR}_t23.ko" ]; then
+		insmod "${KMOD_PATH}/sensor_${SENSOR}_t23.ko" ${SENSOR_PARAM}
+	fi
 	check_return "modprobe sensor drv"
 fi
 
