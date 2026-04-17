@@ -53,10 +53,45 @@ jobs:
             echo NANDFW=${NANDFW} >> ${GITHUB_ENV}
           fi
 
+          if [ -e "${NORFW}" ]; then
+            platform=${{inputs.platform}}
+            soc=${platform%_*}
+            variant=${platform##*_}
+            image_soc=${soc}
+            link=https://github.com/openipc/firmware/releases/download/latest
+
+            case "${soc}" in
+              t10|t20|t21|t23|t30|t31)
+                image_soc="${soc}n"
+                ;;
+            esac
+
+            uboot="u-boot-${image_soc}-nor.bin"
+            norbin="output/images/openipc-${image_soc}-nor-${variant}.bin"
+            workdir=$(mktemp -d)
+
+            if wget -nv ${link}/${uboot} -O "${workdir}/${image_soc}.bin"; then
+              tar -xf "${NORFW}" -C "${workdir}"
+              kernel=$(find "${workdir}" -maxdepth 1 -name 'uImage.*' | head -1)
+              rootfs=$(find "${workdir}" -maxdepth 1 -name 'rootfs.squashfs.*' | head -1)
+
+              if [ -n "${kernel}" ] && [ -n "${rootfs}" ]; then
+                dd if=/dev/zero bs=1K count=5000 status=none | tr '\000' '\377' > "${norbin}"
+                dd if="${workdir}/${image_soc}.bin" of="${norbin}" bs=1K seek=0 conv=notrunc status=none
+                dd if="${kernel}" of="${norbin}" bs=1K seek=320 conv=notrunc status=none
+                dd if="${rootfs}" of="${norbin}" bs=1K seek=2368 conv=notrunc status=none
+                echo NORBIN=${norbin} >> ${GITHUB_ENV}
+              fi
+            fi
+
+            rm -rf "${workdir}"
+          fi
+
       - name: Upload firmware
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{env.TAG_NAME}}
           files: |
             ${{env.NORFW}}
+            ${{env.NORBIN}}
             ${{env.NANDFW}}
